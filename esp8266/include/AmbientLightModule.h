@@ -1,16 +1,16 @@
 //
-// Created by Jonas Lauener on 11.09.18.
+// Gestion de la lumière ambiante avec photo-résistance
 //
 
 #ifndef ESP8266_AMBIENTLIGHTMODULE_H
 #define ESP8266_AMBIENTLIGHTMODULE_H
 
-
-class AmbientLightModule {
+class AmbientLightModule
+{
 private:
     int pinNumber;
     int brightnessCorrection = 0;
-    int storedData[3] = {0,0,0};
+    int storedData[3] = {0, 0, 0};
     int deadBand = 5;
     int maxLightValue;
     int brightnessLevel[10];
@@ -23,5 +23,4 @@ public:
     int getBrightness();
 };
 
-
-#endif //ESP8266_AMBIENTLIGHTMODULE_H
+#endif // ESP8266_AMBIENTLIGHTMODULE_H

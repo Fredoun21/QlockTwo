@@ -12,136 +12,165 @@ LedControlModule::LedControlModule(NeoTopology<MyPanelLayout> _topo) : topo(_top
 LedControlModule::~LedControlModule() {}
 
 /**
- * Setup LEDs in NeoPixel library.
+ * Configurez les LED dans la bibliothèque NeoPixel.
  * @param _pixelStrip NeoPixelBusType object
  */
-void LedControlModule::setup(NeoPixelBusType* _pixelStrip) {
+void LedControlModule::setup(NeoPixelBusType *_pixelStrip)
+{
     pixelStrip = _pixelStrip;
     pixelStrip->Begin();
     pixelStrip->Show();
 };
 
 /**
- * Show Time with LEDs.
- * @param simpleTime Time to be shown.
- * @param ledColor Optional, set LED color.
+ * Afficher l'heure avec des LEDs.
+ * @param simpleTime Heure à afficher.
+ * @param ledColor Facultatif, définissez la couleur de la LED.
  */
-void LedControlModule::showTime(const SimpleTime &simpleTime, const RgbwColor &ledColor) {
-    pixelStrip->ClearTo(RgbwColor(0));
+void LedControlModule::showTime(const SimpleTime &simpleTime, const RgbColor &ledColor)
+{
+    pixelStrip->ClearTo(RgbColor(0));
     enableLedWords(simpleTime, ledColor);
+    // Serial.println("LedControlModule::showTime");
 
-    int minuteDots = simpleTime.getMinute() % 5;
-    enableMinuteDots(minuteDots, ledColor);
+    // int minuteDots = simpleTime.getMinute() % 5;
+    // enableMinuteDots(minuteDots, ledColor);
     pixelStrip->Show();
 };
 
 /**
- * Show that clock is in Wifi configuration mode, in german show Word "Funk".
- * @param ledColor Optional, set LED color.
+ * Montrez que l'horloge est en mode de configuration Wifi, en allemand, affichez le mot "Funk".
+ * @param ledColor Facultatif, définissez la couleur de la LED.
  */
-void LedControlModule::showConfigWifi(const RgbwColor &ledColor) {
-    pixelStrip->ClearTo(RgbwColor(0));
-    enableLedWord(&WORD_FUNK, ledColor);
+void LedControlModule::showConfigWifi(const RgbColor &ledColor)
+{
+    pixelStrip->ClearTo(RgbColor(0));
+    enableLedWord(&WORD_WIFI, RgbColor(220, 118, 51));
     pixelStrip->Show();
 }
 
 /**
- * Enable time words.
- * @param simpleTime Time to be shown.
- * @param ledColor Optional, set LED color.
+ * Activer les mots de temps.
+ * @param simpleTime Heure à afficher.
+ * @param ledColor Facultatif, définissez la couleur de la LED.
  */
-void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbwColor &ledColor) {
-    enableLedWord(&PREFIX_IT, ledColor);
-    enableLedWord(&PREFIX_IS, ledColor);
+void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbColor &ledColor)
+{
+    // Serial.println("\nLedControlModule::enableLedWords");
+    enableLedWord(&PREFIX_IL, ledColor);
+    enableLedWord(&PREFIX_EST, ledColor);
     int fiveMinutes = simpleTime.getMinute() / 5;
+    // Serial.printf("\nMinute: %i", fiveMinutes);
 
-    switch(fiveMinutes){
-        case 0:
-            enableLedWord(&SUFFIX_OCLOCK, ledColor);
-            break;
-        case 1:
-            enableLedWord(&MINUTE_FIVE, ledColor);
-            enableLedWord(&INFIX_AFTER, ledColor);
-            break;
-        case 2:
-            enableLedWord(&MINUTE_TEN, ledColor);
-            enableLedWord(&INFIX_AFTER, ledColor);
-            break;
-        case 3:
-            enableLedWord(&MINUTE_QUARTER, ledColor);
-            enableLedWord(&INFIX_AFTER, ledColor);
-            break;
-        case 4:
-            enableLedWord(&MINUTE_TWENTY, ledColor);
-            enableLedWord(&INFIX_AFTER, ledColor);
-            break;
-        case 5:
-            enableLedWord(&MINUTE_FIVE, ledColor);
-            enableLedWord(&INFIX_BEFORE, ledColor);
-            enableLedWord(&MINUTE_HALF, ledColor);
-            break;
-        case 6:
-            enableLedWord(&MINUTE_HALF, ledColor);
-            break;
-        case 7:
-            enableLedWord(&MINUTE_FIVE, ledColor);
-            enableLedWord(&INFIX_AFTER, ledColor);
-            enableLedWord(&MINUTE_HALF, ledColor);
-            break;
-        case 8:
-            enableLedWord(&MINUTE_TWENTY, ledColor);
-            enableLedWord(&INFIX_BEFORE, ledColor);
-            break;
-        case 9:
-            enableLedWord(&MINUTE_QUARTER, ledColor);
-            enableLedWord(&INFIX_BEFORE, ledColor);
-            break;
-        case 10:
-            enableLedWord(&MINUTE_TEN, ledColor);
-            enableLedWord(&INFIX_BEFORE, ledColor);
-            break;
-        case 11:
-            enableLedWord(&MINUTE_FIVE, ledColor);
-            enableLedWord(&INFIX_BEFORE, ledColor);
-            break;
+    switch (fiveMinutes)
+    {
+    case 0: // HEURE PILE
+        // enableLedWord(&SUFFIX_HEURE, ledColor);
+        // Serial.println("HEURE");
+        break;
+    case 1: // 5 MINUTES
+        enableLedWord(&MINUTE_CINQ, ledColor);
+        // Serial.println("CINQ MINUTES");
+        break;
+    case 2: // 10 MINUTES
+        enableLedWord(&MINUTE_DIX, ledColor);
+        // Serial.println("DIX MINUTES");
+        break;
+    case 3: // ET QUART
+        enableLedWord(&INFIX_ET, ledColor);
+        enableLedWord(&MINUTE_QUART, ledColor);
+        // Serial.println("ET QUART");
+        break;
+    case 4: // 20 MINUTES
+        enableLedWord(&MINUTE_VINGT, ledColor);
+        // Serial.println("VINGT MINUTES");
+        break;
+    case 5: // 25 MINUTES
+        enableLedWord(&MINUTE_VINGTCINQ, ledColor);
+        // Serial.println("VINGT-CINQ MINUTES");
+        break;
+    case 6: // ET DEMI
+        enableLedWord(&INFIX_ET, ledColor);
+        enableLedWord(&MINUTE_DEMI, ledColor);
+        // Serial.println("ET DEMI");
+        break;
+    case 7: // 35 MINUTES
+        enableLedWord(&INFIX_MOINS, ledColor);
+        enableLedWord(&MINUTE_VINGTCINQ, ledColor);
+        // Serial.println("MOINS VINGT-CINQ");
+        break;
+    case 8: // 40 MINUTES
+        enableLedWord(&INFIX_MOINS, ledColor);
+        enableLedWord(&MINUTE_VINGT, ledColor);
+        // Serial.println("MOINS VINGT");
+        break;
+    case 9: // 45 MINUTES
+        enableLedWord(&INFIX_MOINS, ledColor);
+        enableLedWord(&INFIX_LE, ledColor);
+        enableLedWord(&MINUTE_QUART, ledColor);
+        // Serial.println("MOINS LE QUART");
+        break;
+    case 10: // 50 MINUTES
+        enableLedWord(&INFIX_MOINS, ledColor);
+        enableLedWord(&MINUTE_DIX, ledColor);
+        // Serial.println("MOINS DIX");
+        break;
+    case 11: // 55 MINUTES
+        enableLedWord(&INFIX_MOINS, ledColor);
+        enableLedWord(&MINUTE_CINQ, ledColor);
+        // Serial.println("MOINS CINQ");
+        break;
     }
 
-    if (fiveMinutes < 5){
+    if (fiveMinutes < 5)
+    {
         int hourIndex = (simpleTime.getHour() + 11) % 12;
+        // Serial.printf("Heure: %i\n", hourIndex);
         enableLedWord(&HOURS[hourIndex], ledColor);
-    } else{
+        enableLedWord(&SUFFIX_HEURE, ledColor);
+    }
+    else
+    {
         int hourIndex = (simpleTime.getHour()) % 12;
+        // Serial.printf("Heure: %i\n", hourIndex);
         enableLedWord(&HOURS[hourIndex], ledColor);
+        enableLedWord(&SUFFIX_HEURE, ledColor);
     }
 };
 
 /**
- * Enable single LedWord on LED Matrix.
+ * Activer un seul LedWord sur la matrice LED.
  * @param ledWord
  * @param ledColor
  */
-void LedControlModule::enableLedWord(const LedWord* ledWord, const RgbwColor &ledColor) {
-    for (int j = 0; j < ledWord->getLength(); j++) {
+void LedControlModule::enableLedWord(const LedWord *ledWord, const RgbColor &ledColor)
+{
+    // Serial.printf("\nMot %c de %i caractères.", ledWord, ledWord->getLength());
+    for (int j = 0; j < ledWord->getLength(); j++)
+    {
         pixelStrip->SetPixelColor(topo.Map(ledWord->getFirstPixelX() + j, ledWord->getFirstPixelY()), ledColor);
     }
 }
 
 /**
- * Enable minute dots in edges.
- * @param subMinute Starts from 1.
+ * Activer les petits points dans les bords.
+ * @param subMinute Commence à partir de 1.
  * @param ledColor
  */
-void LedControlModule::enableMinuteDots(int subMinute, const RgbwColor &ledColor) {
-    for (int i = 1; i <= subMinute; i++) {
+void LedControlModule::enableMinuteDots(int subMinute, const RgbColor &ledColor)
+{
+    for (int i = 1; i <= subMinute; i++)
+    {
         int j = 110 + ((i + 2) % 4);
         pixelStrip->SetPixelColor(j, ledColor);
     }
 }
 
 /**
- * Show on all LEDs black.
+ * Eteindre toutes les LEds.
  */
-void LedControlModule::disableLeds() {
-    pixelStrip->ClearTo(RgbwColor(0));
+void LedControlModule::disableLeds()
+{
+    pixelStrip->ClearTo(RgbColor(0));
     pixelStrip->Show();
 };

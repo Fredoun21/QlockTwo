@@ -2,9 +2,10 @@
 #define LEDWORD_H
 
 /**
- * LedWord representing on word (only horizontal) on the matrix, defined by first pixel and word length.
+ * LedWord représentant un mot (uniquement horizontal) sur la matrice, défini par le premier pixel et la longueur du mot.
  */
-class LedWord {
+class LedWord
+{
 public:
     LedWord();
     LedWord(int firstPixelX, int firstPixelY, int length);
@@ -14,10 +15,11 @@ public:
     void setFirstPixelY(int firstPixelX);
     int getLength() const;
     void setLength(int length);
+
 private:
     int firstPixelX;
     int firstPixelY;
     int length;
 };
 
-#endif //LEDWORD_H
+#endif // LEDWORD_H

@@ -10,23 +10,25 @@
 #define WifiModule_H
 
 #include <stdio.h>
-#include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
-
-#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
-#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
-#include "ConfigModule.h"
+#include <ESP8266WiFi.h>      //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
+#include <DNSServer.h>        //Serveur DNS local utilisé pour rediriger toutes les requêtes vers le portail de configuration
+#include <ESP8266WebServer.h> //Serveur Web local utilisé pour servir le portail de configuration
+#include <WiFiManager.h>      //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include "ConfigModuleJson.h"
+// #include <ElegantOTA.h>
 
 /**
- * Handling connection to Wifi and setting up Wifi credentials by creating an Access Point.
+ * Gestion de la connexion au Wifi et configuration des identifiants Wifi en créant un point d'accès.
  */
-class WifiModule {
+class WifiModule
+{
 private:
     String deviceName;
     WiFiManager wifiManager;
 
     WiFiManagerParameter parameterEnableTime = WiFiManagerParameter("enable_time", "Enable Time (HH:MM)", "", 6);
     WiFiManagerParameter parameterDisableTime = WiFiManagerParameter("disable_time", "Disable Time (HH:MM)", "", 6);
+
 public:
     WifiModule(String _deviceName);
     ~WifiModule();
@@ -36,9 +38,8 @@ public:
     void reset();
     SimpleTime getEnableTime();
     SimpleTime getDisableTime();
+
 protected:
-
 };
-
 
 #endif /* WifiModule_h */

@@ -10,49 +10,50 @@
 #include <Arduino.h>
 
 #ifndef countof
-#define countof(array) (sizeof(array)/sizeof(array[0]))
+#define countof(array) (sizeof(array) / sizeof(array[0]))
 #endif
 
 /**
- * ClockModule is handling the RTC and keeps it updated over NTP.
+ * ClockModule gère le RTC et le maintient à jour via NTP.
  * @param _rtc Arduino Wire object
- * @param _updateInterval Interval of updating RTC in Seconds
- * @param _ntpServerName NTP server address.
+ * @param _updateInterval Intervalle de mise à jour RTC en secondes
+ * @param _ntpServerName Adresse du serveur NTP.
  */
-ClockModule::ClockModule(RtcDS3231<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName) : rtc(_rtc),
-                                                                                              localTZ(_localTZ),
-                                                                                              ntpServerName(
-                                                                                                      _ntpServerName) {}
+ClockModule::ClockModule(RtcDS1307<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName) : rtc(_rtc), localTZ(_localTZ), ntpServerName(_ntpServerName) {}
 
 ClockModule::~ClockModule() {}
 
 /**
- * Setup NTP client and RTC connection.
+ * Configurez le client NTP et la connexion RTC.
  */
-void ClockModule::setup() {
+void ClockModule::setup()
+{
     ntpUDP.begin(localPort);
 
     rtc.Begin();
 
-    // never assume the Rtc was last configured by you, so
-    // just clear them to your needed state
-    rtc.Enable32kHzPin(false);
-    rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
+    // ne présumez jamais que le Rtc a été configuré pour la dernière fois par vous, donc
+    // effacez-le simplement dans l'état dont vous avez besoin
+    // rtc.Enable32kHzPin(false); //uniquement DS3231
+    rtc.SetSquareWavePin(DS1307SquareWaveOut_Low);
 }
 
 /**
- * Either true if rtc time is not valid or the updateInterval is reached.
+ * Soit vrai si l'heure rtc n'est pas valide ou si l'intervalle de mise à jour est atteint.
  * @return
  */
-bool ClockModule::isDateTimeValid() {
+bool ClockModule::isDateTimeValid()
+{
+    Serial.printf("Date valide: %i\n",rtc.IsDateTimeValid());
     return rtc.IsDateTimeValid();
 }
 
 /**
- * Print RtcDateTime in human readable on Serial.
+ * Afficher RtcDateTime sur Serial.
  * @param dt
  */
-void printDateTime(const RtcDateTime &dt) {
+void printDateTime(const RtcDateTime &dt)
+{
     char datestring[20];
 
     snprintf_P(datestring,
@@ -68,10 +69,11 @@ void printDateTime(const RtcDateTime &dt) {
 }
 
 /**
- * Print time_t in human readable on Serial.
+ * Afficher time_t sur Serial.
  * @param dt
  */
-void printDateTime(const time_t &dt) {
+void printDateTime(const time_t &dt)
+{
     char datestring[20];
 
     snprintf_P(datestring,
@@ -87,21 +89,24 @@ void printDateTime(const time_t &dt) {
 }
 
 /**
- * Get current time from NTP server and update RTC.
- * @return true if updating successful
+ * Obtenez l'heure actuelle du serveur NTP et mettez à jour RTC.
+ * @return vrai si la mise à jour a réussi
  */
-void ClockModule::update() {
-    Serial.println("ClockModule: Update Clock.");
+void ClockModule::update()
+{
+    Serial.println("\n ClockModule: Mise à jour de l'horloge.");
 
     int ntpAttempt = 0;
     time_t ntpTime = 0;
-    while (ntpTime == 0 && ntpAttempt < 10) {
+    while (ntpTime == 0 && ntpAttempt < 10)
+    {
         ntpTime = getNtpTime();
         ntpAttempt++;
     }
 
-    if (ntpTime == 0) {
-        Serial.println("Update Clock FAILED");
+    if (ntpTime == 0)
+    {
+        Serial.println("ClockModule: Echec de la mise à jour de l'horloge.");
         return;
     }
 
@@ -110,95 +115,103 @@ void ClockModule::update() {
 
     RtcDateTime ntpRtcDateTime;
     ntpRtcDateTime.InitWithEpoch32Time(ntpTime);
-    Serial.print("Converted NTPtime: ");
+    Serial.print("Convertion NTPtime: ");
     printDateTime(ntpRtcDateTime);
 
     rtc.SetDateTime(ntpRtcDateTime);
 }
 
 /**
- * Convert time_t to SimpleTime
+ * Convertir time_t en SimpleTime
  * @param time
  * @return Converted SimpleTime
  */
-SimpleTime convertToSimpleTime(const time_t &time) {
+SimpleTime convertToSimpleTime(const time_t &time)
+{
     return SimpleTime(hour(time), minute(time));
 }
 
 /**
- * Get current time from RTC in UTC.
- * @return Current Time as time_t in UTC.
+ * Obtenez l'heure actuelle de RTC en UTC.
+ * @return Heure actuelle en tant que time_t en UTC.
  */
-time_t ClockModule::getUtcTime() {
+time_t ClockModule::getUtcTime()
+{
     return rtc.GetDateTime().Epoch32Time();
 }
 
 /**
- * Get current time from RTC in local time. With timezone and daylight saving adjustment.
+ * Obtenez l'heure actuelle du RTC en heure locale. Avec réglage du fuseau horaire et de l'heure d'été.
  * @return Current Local Time as SimpleTime.
  */
-SimpleTime ClockModule::getLocalSimpleTime() {
+SimpleTime ClockModule::getLocalSimpleTime()
+{
     return convertToSimpleTime(localTZ.toLocal(getUtcTime()));
 }
 
 /*-------- NTP code ----------*/
 
 /**
- * Get NTP time from set NTP server over UDP.
+ * Obtenez l'heure NTP à partir du serveur NTP défini via UDP.
  * @return
  */
-time_t ClockModule::getNtpTime() {
-    IPAddress ntpServerIP; // NTP server's ip address
+time_t ClockModule::getNtpTime()
+{
+    IPAddress ntpServerIP; // Adresse IP du serveur NTP
 
-    while (ntpUDP.parsePacket() > 0); // discard any previously received packets
+    while (ntpUDP.parsePacket() > 0)
+        ; // rejeter tous les paquets précédemment reçus
 
     Serial.println("Transmit NTP Request");
-    // get a random server from the pool
+    // obtenir un serveur aléatoire du pool
     WiFi.hostByName(ntpServerName.c_str(), ntpServerIP);
     Serial.print(ntpServerName);
     Serial.print(": ");
     Serial.println(ntpServerIP);
     this->sendNTPpacket(ntpServerIP);
     uint32_t beginWait = millis();
-    while (millis() - beginWait < 1500) {
+    while (millis() - beginWait < 1500)
+    {
         int size = ntpUDP.parsePacket();
-        if (size >= NTP_PACKET_SIZE) {
+        if (size >= NTP_PACKET_SIZE)
+        {
             Serial.println("Receive NTP Response");
-            ntpUDP.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
+            ntpUDP.read(packetBuffer, NTP_PACKET_SIZE); // lire le paquet dans la mémoire tampon
             unsigned long secsSince1900;
-            // convert four bytes starting at location 40 to a long integer
-            secsSince1900 = (unsigned long) packetBuffer[40] << 24;
-            secsSince1900 |= (unsigned long) packetBuffer[41] << 16;
-            secsSince1900 |= (unsigned long) packetBuffer[42] << 8;
-            secsSince1900 |= (unsigned long) packetBuffer[43];
+            // convertir quatre octets commençant à l'emplacement 40 en un entier long
+            secsSince1900 = (unsigned long)packetBuffer[40] << 24;
+            secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
+            secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
+            secsSince1900 |= (unsigned long)packetBuffer[43];
             return secsSince1900 - 2208988800UL;
         }
     }
     Serial.println("No NTP Response :-(");
-    return 0; // return 0 if unable to get the time
+    return 0; // renvoie 0 si impossible d'obtenir l'heure
 }
 
 /**
- * Send an NTP request to the time server at the given address
+ * Envoyer une requête NTP au serveur de temps à l'adresse donnée
  * @param address IP address
  */
-void ClockModule::sendNTPpacket(IPAddress &address) {
-    // set all bytes in the buffer to 0
+void ClockModule::sendNTPpacket(IPAddress &address)
+{
+    // mettre tous les octets du tampon à 0
     memset(packetBuffer, 0, NTP_PACKET_SIZE);
-    // Initialize values needed to form NTP request
-    // (see URL above for details on the packets)
-    packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-    packetBuffer[1] = 0;     // Stratum, or type of clock
-    packetBuffer[2] = 6;     // Polling Interval
-    packetBuffer[3] = 0xEC;  // Peer Clock Precision
-    // 8 bytes of zero for Root Delay & Root Dispersion
+    // Initialiser les valeurs nécessaires pour former la requête NTP
+    // (voir URL ci-dessus pour plus de détails sur les paquets)
+    packetBuffer[0] = 0b11100011; // LI, Version, Mode
+    packetBuffer[1] = 0;          // Stratum, or type of clock
+    packetBuffer[2] = 6;          // Polling Interval
+    packetBuffer[3] = 0xEC;       // Peer Clock Precision
+    // 8 octets de zéro pour Root Delay & Root Dispersion
     packetBuffer[12] = 49;
     packetBuffer[13] = 0x4E;
     packetBuffer[14] = 49;
     packetBuffer[15] = 52;
-    // all NTP fields have been given values, now
-    // you can send a packet requesting a timestamp:
-    ntpUDP.beginPacket(address, 123); //NTP requests are to port 123
+    // tous les champs NTP ont reçu des valeurs, maintenant
+    // vous pouvez envoyer un paquet demandant un horodatage :
+    ntpUDP.beginPacket(address, 123); // Les requêtes NTP sont destinées au port 123
     ntpUDP.write(packetBuffer, NTP_PACKET_SIZE);
     ntpUDP.endPacket();
 }

@@ -10,8 +10,8 @@
 #define ClockModule_H
 
 #include <stdio.h>
-#include <Wire.h> // must be included here so that Arduino library object file references work
-#include <RtcDS3231.h>
+#include <Wire.h> // doit être inclus ici pour que les références de fichiers d'objets de la bibliothèque Arduino fonctionnent
+#include <RtcDS1307.h>
 #include <Timezone.h>
 #include <TimeLib.h>
 #include <ESP8266WiFi.h>
@@ -19,31 +19,31 @@
 #include "SimpleTime.h"
 
 /**
- * ClockModule is handling the RTC and keeps it updated over NTP.
+ * ClockModule gère le RTC et le maintient à jour via NTP.
  */
-class ClockModule {
+class ClockModule
+{
 private:
-  RtcDS3231<TwoWire> rtc;
+  RtcDS1307<TwoWire> rtc;
   Timezone localTZ;
   WiFiUDP ntpUDP;
   String ntpServerName;
-  static const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
-  byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
-  unsigned int localPort = 8888; // local port to listen for UDP packets
+  static const int NTP_PACKET_SIZE = 48; // L'heure NTP est dans les 48 premiers octets du message
+  byte packetBuffer[NTP_PACKET_SIZE];    // tampon pour contenir les paquets entrants et sortants
+  unsigned int localPort = 8888;         // port local pour écouter les paquets UDP
   time_t getNtpTime();
   void sendNTPpacket(IPAddress &address);
+
 public:
-    ClockModule(RtcDS3231<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName);
-    ~ClockModule();
-    void setup();
-    bool isDateTimeValid();
-    void update();
-    time_t getUtcTime();
-    SimpleTime getLocalSimpleTime();
+  ClockModule(RtcDS1307<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName);
+  ~ClockModule();
+  void setup();
+  bool isDateTimeValid();
+  void update();
+  time_t getUtcTime();
+  SimpleTime getLocalSimpleTime();
 
 protected:
-
 };
-
 
 #endif /* ClockModule_h */
