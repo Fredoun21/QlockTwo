@@ -44,7 +44,7 @@ void ClockModule::setup()
  */
 bool ClockModule::isDateTimeValid()
 {
-    Serial.printf("Date valide: %i\n",rtc.IsDateTimeValid());
+    Serial.printf("Date valide: %i\n", rtc.IsDateTimeValid());
     return rtc.IsDateTimeValid();
 }
 
@@ -109,6 +109,8 @@ void ClockModule::update()
         Serial.println("ClockModule: Echec de la mise à jour de l'horloge.");
         return;
     }
+
+    // ntpTime = 1663334425;
 
     printDateTime(ntpTime);
     Serial.println(ntpTime);

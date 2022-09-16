@@ -45,7 +45,11 @@ void LedControlModule::showTime(const SimpleTime &simpleTime, const RgbColor &le
 void LedControlModule::showConfigWifi(const RgbColor &ledColor)
 {
     pixelStrip->ClearTo(RgbColor(0));
-    enableLedWord(&WORD_WIFI, RgbColor(220, 118, 51));
+    for (size_t i = 0; i < 8; i++)
+    {
+        enableLedWord(&WORD_WIFI[i], RgbColor(60, 220, 40));
+    }
+
     pixelStrip->Show();
 }
 
@@ -59,8 +63,9 @@ void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbCol
     // Serial.println("\nLedControlModule::enableLedWords");
     enableLedWord(&PREFIX_IL, ledColor);
     enableLedWord(&PREFIX_EST, ledColor);
+    int hourIndex;
     int fiveMinutes = simpleTime.getMinute() / 5;
-    // Serial.printf("\nMinute: %i", fiveMinutes);
+    Serial.printf("\nMinute: %i", fiveMinutes);
 
     switch (fiveMinutes)
     {
@@ -122,20 +127,42 @@ void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbCol
         break;
     }
 
-    if (fiveMinutes < 5)
+    Serial.printf("\nsimpleTime.getHour: %i ", simpleTime.getHour());
+
+    if (fiveMinutes < 6)
     {
-        int hourIndex = (simpleTime.getHour() + 11) % 12;
-        // Serial.printf("Heure: %i\n", hourIndex);
-        enableLedWord(&HOURS[hourIndex], ledColor);
-        enableLedWord(&SUFFIX_HEURE, ledColor);
+        switch (simpleTime.getHour())
+        {
+        case 0:
+            hourIndex = 0;
+            break;
+        case 12:
+            hourIndex = 12;
+            break;
+        default:
+            hourIndex = (simpleTime.getHour()) % 12;
+            enableLedWord(&SUFFIX_HEURE, ledColor);
+            break;
+        }
     }
     else
     {
-        int hourIndex = (simpleTime.getHour()) % 12;
-        // Serial.printf("Heure: %i\n", hourIndex);
-        enableLedWord(&HOURS[hourIndex], ledColor);
-        enableLedWord(&SUFFIX_HEURE, ledColor);
+        switch (simpleTime.getHour())
+        {
+        case 11:
+            hourIndex = 12;
+            break;
+        case 23:
+            hourIndex = 0;
+            break;
+        default:
+            hourIndex = (simpleTime.getHour()) % 12 + 1;
+            enableLedWord(&SUFFIX_HEURE, ledColor);
+            break;
+        }
     }
+    enableLedWord(&HOURS[hourIndex], ledColor);
+    Serial.printf("\nHeure: %i", hourIndex);
 };
 
 /**

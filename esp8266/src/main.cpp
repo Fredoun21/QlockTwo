@@ -84,6 +84,7 @@ void setup()
     currentLedColorId = config.setLedColor;
     // updateLedColor();
     ledControlModule.setup(&pixelStrip);
+    ledControlModule.showConfigWifi();
 
     // setupButtons();
 
@@ -174,7 +175,6 @@ void configModeCallback(WiFiManager *myWiFiManager)
     Serial.println("\n En mode configuration");
 
     showTimeDisabled = true;
-    ledControlModule.showConfigWifi();
 }
 
 /**

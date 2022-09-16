@@ -33,7 +33,7 @@ private:
   unsigned int localPort = 8888;         // port local pour écouter les paquets UDP
   time_t getNtpTime();
   void sendNTPpacket(IPAddress &address);
-
+  
 public:
   ClockModule(RtcDS1307<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName);
   ~ClockModule();

@@ -21,6 +21,7 @@ const LedWord MINUTE_VINGTCINQ = LedWord(0, 8, 10); // VINGT-CINQ
 const LedWord MINUTE_DEMI = LedWord(3, 9, 4);       // DEMI
 
 const LedWord HOURS[] = {
+    LedWord(5, 4, 6), // MINUIT
     LedWord(4, 2, 3), // UNE
     LedWord(7, 0, 4), // DEUX
     LedWord(6, 1, 5), // TROIS
@@ -32,10 +33,19 @@ const LedWord HOURS[] = {
     LedWord(0, 2, 4), // NEUF
     LedWord(2, 4, 3), // DIX
     LedWord(0, 5, 4), // ONZE
-    LedWord(0, 4, 4), // MIDI
-    LedWord(5, 4, 6)  // MINUIT
+    LedWord(0, 4, 4)  // MIDI
 };
 
-const LedWord WORD_WIFI = LedWord(8, 9, 3);
+const LedWord WORD_WIFI[] = {
+    LedWord(2, 0, 1),  // N
+    LedWord(6, 0, 1),  // O
+    LedWord(4, 5, 1),  // R
+    LedWord(5, 6, 1),  // O
+    LedWord(2, 7, 1),  // R
+    LedWord(8, 7, 3),  // PMD
+    LedWord(10, 8, 1), // U
+    LedWord(2, 9, 1),  // S
+    LedWord(7, 9, 4)   // EPAM
+};
 
 #endif /* LedMapping_H */
