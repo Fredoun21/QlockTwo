@@ -13,7 +13,7 @@ WifiModule::WifiModule(String _deviceName) : deviceName(_deviceName) {}
 WifiModule::~WifiModule() {}
 
 /**
- * Setup WifiManger
+ * Setup WifiManager
  * @param configModeCallback Est appelé lorsque WiFiManager passe en mode de configuration.
  * @param saveConfig Est appelé lorsque WifiManager lorsque des paramètres personnalisés ont été définis ET qu'une connexion a été établie.
  */
@@ -27,6 +27,8 @@ void WifiModule::setup(void (*configModeCallback)(WiFiManager *myWiFiManager), v
 
     wifiManager.addParameter(&parameterDisableTime);
     wifiManager.addParameter(&parameterEnableTime);
+    wifiManager.addParameter(&parameterLedColor);
+    wifiManager.addParameter(&parameterBrightness);
     // void (WifiModule::*saveConfig)(WiFiManager *myWiFiManager);
     // saveConfig = &WifiModule::configModeCallback;
 }
@@ -88,3 +90,21 @@ SimpleTime WifiModule::getDisableTime()
 {
     return SimpleTime::parse(parameterDisableTime.getValue());
 }
+
+/**
+ * Renvoie LedColor à partir des paramètres définis.
+ * @return LedColor
+ */
+String WifiModule::getLedColor()
+{
+    return parameterLedColor.getValue();
+};
+
+/**
+ * Renvoie Brightness à partir des paramètres définis.
+ * @return Brightness
+ */
+String WifiModule::getBrightness()
+{
+    return parameterBrightness.getValue();
+};

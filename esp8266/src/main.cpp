@@ -18,15 +18,19 @@
 //-----------------------------------------------------
 // Member Variables
 //-----------------------------------------------------
-NeoTopology<MyPanelLayout> topo(PANEL_WIDTH, PANEL_HEIGHT);
+NeoTopology<MyPanelLayout> topo(PANEL_WIDTH, PANEL_HEIGHT); //declaration de la matrice de lEDs 
+
 LedControlModule ledControlModule(topo);
+
 NeoPixelBusType pixelStrip(PIXEL_COUNT);
 
-ClockModule clockModule(Wire, LOCAL_TIMEZONE, NTP_SERVER_NAME);
+ConfigModuleJson configModuleJson(CONFIG_FILE_PATH);
 
 WifiModule wifiModule(DEVICE_NAME);
 
-ConfigModule configModule(CONFIG_FILE_PATH);
+WiFiServer server(80);
+
+ClockModule clockModule(Wire, LOCAL_TIMEZONE, NTP_SERVER_NAME);
 
 AmbientLightModule ambientLight(LIGHT_SENSOR_PIN, MAXIMUM_LIGHT_VALUE);
 
@@ -77,12 +81,13 @@ void setup()
     Serial.println("\nDebut de l'installation.");
     Serial.println("Chargement configuration:");
 
-    configModule.setup();
-    config = configModule.loadConfig();
+    configModuleJson.setup();
+    config = configModuleJson.loadConfig();
 
     // Configuration LED strip
-    currentLedColorId = config.setLedColor;
-    // updateLedColor();
+    currentLedColorId = config.setLedColor;    
+    updateLedColor();
+
     ledControlModule.setup(&pixelStrip);
     ledControlModule.showConfigWifi();
 
@@ -92,6 +97,8 @@ void setup()
     wifiModule.setup(configModeCallback, saveConfigCallback);
     // wifiModule.reset();
     wifiModule.connect();
+
+    server.begin();
 
     // Register host name in WiFi and mDNS
     String hostNameWifi = HOST_NAME;
@@ -159,6 +166,15 @@ void loop()
         mTimeSeconds++;
     }
 
+    // Create a client and listen for incoming clients
+    WiFiClient client = server.available();
+
+    // Do nothing if server is not available
+    if (!client)
+    {
+        return;
+    }
+
     // RemoteDebug handle
     Debug.handle();
 
@@ -185,7 +201,7 @@ void saveConfigCallback()
     Serial.println("Save callback.");
     config.enableTime = wifiModule.getEnableTime();
     config.disableTime = wifiModule.getDisableTime();
-    configModule.saveConfig(config);
+    configModuleJson.saveConfig(config);
 
     showTimeDisabled = false;
     showTime();
@@ -263,7 +279,7 @@ void updateLedColor()
 //         currentLedColorId = (currentLedColorId + 1) % LED_COLORS_SIZE;
 
 //         config.setLedColor = currentLedColorId;
-//         configModule.saveConfig(config);
+//         configModuleJson.saveConfig(config);
 
 //         updateLedColor();
 //         showTime();

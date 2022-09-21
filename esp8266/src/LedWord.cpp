@@ -1,10 +1,10 @@
 #include "LedWord.h"
 
-LedWord::LedWord(){};
+LedWord::LedWord() {}
 
-LedWord::LedWord(int _firstPixelX, int _firstPixelY, int _length) : firstPixelX(_firstPixelX), firstPixelY(_firstPixelY), length(_length)
-{
-}
+LedWord::LedWord(int _firstPixelX, int _firstPixelY, int _length) : firstPixelX(_firstPixelX), firstPixelY(_firstPixelY), length(_length) {}
+
+LedWord::~LedWord() {}
 
 int LedWord::getFirstPixelX() const
 {

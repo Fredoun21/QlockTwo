@@ -22,13 +22,6 @@
  */
 class WifiModule
 {
-private:
-    String deviceName;
-    WiFiManager wifiManager;
-
-    WiFiManagerParameter parameterEnableTime = WiFiManagerParameter("enable_time", "Enable Time (HH:MM)", "", 6);
-    WiFiManagerParameter parameterDisableTime = WiFiManagerParameter("disable_time", "Disable Time (HH:MM)", "", 6);
-
 public:
     WifiModule(String _deviceName);
     ~WifiModule();
@@ -38,6 +31,17 @@ public:
     void reset();
     SimpleTime getEnableTime();
     SimpleTime getDisableTime();
+    String getLedColor();
+    String getBrightness();
+
+private:
+    String deviceName;
+    WiFiManager wifiManager;
+
+    WiFiManagerParameter parameterEnableTime = WiFiManagerParameter("enable_time", "Enable Time (HH:MM)", "", 6);
+    WiFiManagerParameter parameterDisableTime = WiFiManagerParameter("disable_time", "Disable Time (HH:MM)", "", 6);
+    WiFiManagerParameter parameterLedColor = WiFiManagerParameter("led_color", "Couleur des leds", "", 6);
+    WiFiManagerParameter parameterBrightness = WiFiManagerParameter("brightness", "Intensite des leds", "", 6);
 
 protected:
 };

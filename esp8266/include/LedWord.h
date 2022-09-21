@@ -9,6 +9,7 @@ class LedWord
 public:
     LedWord();
     LedWord(int firstPixelX, int firstPixelY, int length);
+    ~LedWord();
     int getFirstPixelX() const;
     void setFirstPixelX(int firstPixelX);
     int getFirstPixelY() const;
@@ -20,6 +21,8 @@ private:
     int firstPixelX;
     int firstPixelY;
     int length;
+
+protected:
 };
 
 #endif // LEDWORD_H

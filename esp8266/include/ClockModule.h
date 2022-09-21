@@ -23,6 +23,15 @@
  */
 class ClockModule
 {
+public:
+  ClockModule(RtcDS1307<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName);
+  ~ClockModule();
+  void setup();
+  bool isDateTimeValid();
+  void update();
+  time_t getUtcTime();
+  SimpleTime getLocalSimpleTime();
+
 private:
   RtcDS1307<TwoWire> rtc;
   Timezone localTZ;
@@ -33,15 +42,8 @@ private:
   unsigned int localPort = 8888;         // port local pour écouter les paquets UDP
   time_t getNtpTime();
   void sendNTPpacket(IPAddress &address);
-  
-public:
-  ClockModule(RtcDS1307<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName);
-  ~ClockModule();
-  void setup();
-  bool isDateTimeValid();
-  void update();
-  time_t getUtcTime();
-  SimpleTime getLocalSimpleTime();
+  // void printDateTime(const RtcDateTime &dt);
+  // SimpleTime convertToSimpleTime(const time_t &time);
 
 protected:
 };

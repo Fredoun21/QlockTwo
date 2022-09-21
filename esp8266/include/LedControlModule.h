@@ -25,13 +25,6 @@ typedef RowMajorAlternating180Layout MyPanelLayout;
  */
 class LedControlModule
 {
-private:
-    NeoPixelBusType *pixelStrip;
-    NeoTopology<MyPanelLayout> topo;
-    void enableLedWords(const SimpleTime &simpleTime, const RgbColor &ledColor);
-    void enableLedWord(const LedWord *ledWord, const RgbColor &ledColor);
-    void enableMinuteDots(int subMinute, const RgbColor &ledColor);
-
 public:
     LedControlModule(NeoTopology<MyPanelLayout> _topo);
     ~LedControlModule();
@@ -39,6 +32,15 @@ public:
     void disableLeds();
     void showTime(const SimpleTime &simpleTime, const RgbColor &ledColor = RgbColor(255));
     void showConfigWifi(const RgbColor &ledColor = RgbColor(255));
+
+private:
+    NeoPixelBusType *pixelStrip;
+    NeoTopology<MyPanelLayout> topo;
+    void enableLedWords(const SimpleTime &simpleTime, const RgbColor &ledColor);
+    void enableLedWord(const LedWord *ledWord, const RgbColor &ledColor);
+    void enableMinuteDots(int subMinute, const RgbColor &ledColor);
+
+protected:
 };
 
 #endif /* LedControlModule_h */

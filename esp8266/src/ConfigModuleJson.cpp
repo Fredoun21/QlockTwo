@@ -4,9 +4,16 @@
 
 #include "ConfigModuleJson.h"
 
-ConfigModule::ConfigModule(String _configFilePath) : configFilePath(_configFilePath){};
+ConfigModuleJson::ConfigModuleJson(String _configFilePath) : configFilePath(_configFilePath) {}
 
-void ConfigModule::setup()
+ConfigModuleJson::~ConfigModuleJson() {}
+
+/**
+ * Démarre le système de fichier LittleFS.
+ *
+ * @return true on success
+ */
+void ConfigModuleJson::setup()
 {
     if (!LittleFS.begin())
     {
@@ -14,7 +21,66 @@ void ConfigModule::setup()
         return;
     }
 
-    //LittleFS.format();
+    // Get all information about SPIFFS
+    FSInfo fsInfo;
+    LittleFS.info(fsInfo);
+    Serial.println("File system info");
+
+    // Taille de la zone de fichier
+    Serial.print("Total space:      ");
+    Serial.print(fsInfo.totalBytes);
+    Serial.println("byte");
+
+    // Espace total utilise
+    Serial.print("Total space used: ");
+    Serial.print(fsInfo.usedBytes);
+    Serial.println("byte");
+
+    // Taille d un bloc et page
+    Serial.print("Block size:       ");
+    Serial.print(fsInfo.blockSize);
+    Serial.println("byte");
+
+    Serial.print("Page size:        ");
+    Serial.print(fsInfo.totalBytes);
+    Serial.println("byte");
+
+    Serial.print("Max open files:   ");
+    Serial.println(fsInfo.maxOpenFiles);
+
+    // Taille max. d un chemin
+    Serial.print("Max path lenght:  ");
+    Serial.println(fsInfo.maxPathLength);
+
+    // Open folder
+    Dir dir = LittleFS.openDir("/");
+    // Affiche le contenu du dossier racine | Print dir the content
+    while (dir.next())
+    {
+        // recupere le nom du fichier
+        Serial.print(dir.fileName());
+        Serial.print(" - ");
+        // et sa taille
+        if (dir.fileSize())
+        {
+            File f = dir.openFile("r");
+
+            // lecture et affichage du fichier config.json
+            Serial.println(f.size());
+            while (f.available())
+            {
+                Serial.write(f.read());
+            }
+            Serial.println();
+            f.close();
+            Serial.println();
+        }
+        else
+        {
+            Serial.println("file is empty");
+        }
+    }
+    // LittleFS.format();
 }
 
 /**
@@ -22,7 +88,7 @@ void ConfigModule::setup()
  * @param config
  * @return true on success
  */
-bool ConfigModule::saveConfig(const Config &config)
+bool ConfigModuleJson::saveConfig(const Config &config)
 {
     Serial.println("enregistrement de la configuration");
     const size_t capacity = JSON_OBJECT_SIZE(10);
@@ -40,8 +106,7 @@ bool ConfigModule::saveConfig(const Config &config)
     serializeJson(doc, Serial);
     serializeJson(doc, configFile);
 
-    configFile.close();
-    // end save
+    configFile.close(); // end save
 
     return true;
 }
@@ -50,7 +115,7 @@ bool ConfigModule::saveConfig(const Config &config)
  * Chargez la configuration JSON à partir de SPIFF et désérialisez-la.
  * @return En cas de succès : configuration enregistrée ; En cas d'échec : configuration vide
  */
-const Config ConfigModule::loadConfig()
+const Config ConfigModuleJson::loadConfig()
 {
     if (LittleFS.exists(configFilePath))
     {
@@ -84,7 +149,7 @@ const Config ConfigModule::loadConfig()
  * @param jsonObject
  * @return Filled Config Object.
  */
-Config ConfigModule::parseJsonConfig(const JsonDocument &jsonObject)
+Config ConfigModuleJson::parseJsonConfig(const JsonDocument &jsonObject)
 {
     Config config;
 
@@ -101,7 +166,7 @@ Config ConfigModule::parseJsonConfig(const JsonDocument &jsonObject)
  * @param json To be filled JsonObject, by reference
  * @param config Source Config
  */
-void ConfigModule::copyToJsonConfig(const Config &config, JsonDocument &doc)
+void ConfigModuleJson::copyToJsonConfig(const Config &config, JsonDocument &doc)
 {
     doc[DISABLE_TIME_ID] = config.disableTime.toString();
     doc[ENABLE_TIME_ID] = config.enableTime.toString();

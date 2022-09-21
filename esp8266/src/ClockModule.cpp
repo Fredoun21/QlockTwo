@@ -21,6 +21,7 @@
  */
 ClockModule::ClockModule(RtcDS1307<TwoWire> _rtc, Timezone _localTZ, String _ntpServerName) : rtc(_rtc), localTZ(_localTZ), ntpServerName(_ntpServerName) {}
 
+// Déconstruteur
 ClockModule::~ClockModule() {}
 
 /**
@@ -29,9 +30,7 @@ ClockModule::~ClockModule() {}
 void ClockModule::setup()
 {
     ntpUDP.begin(localPort);
-
     rtc.Begin();
-
     // ne présumez jamais que le Rtc a été configuré pour la dernière fois par vous, donc
     // effacez-le simplement dans l'état dont vous avez besoin
     // rtc.Enable32kHzPin(false); //uniquement DS3231
@@ -124,6 +123,15 @@ void ClockModule::update()
 }
 
 /**
+ * Obtenez l'heure actuelle de RTC en UTC.
+ * @return Heure actuelle en tant que time_t en UTC.
+ */
+time_t ClockModule::getUtcTime()
+{
+    return rtc.GetDateTime().Epoch32Time();
+}
+
+/**
  * Convertir time_t en SimpleTime
  * @param time
  * @return Converted SimpleTime
@@ -131,15 +139,6 @@ void ClockModule::update()
 SimpleTime convertToSimpleTime(const time_t &time)
 {
     return SimpleTime(hour(time), minute(time));
-}
-
-/**
- * Obtenez l'heure actuelle de RTC en UTC.
- * @return Heure actuelle en tant que time_t en UTC.
- */
-time_t ClockModule::getUtcTime()
-{
-    return rtc.GetDateTime().Epoch32Time();
 }
 
 /**

@@ -27,18 +27,21 @@ struct Config
 /**
  * Enregistrez et chargez la configuration vers/depuis le SPIFF de l'ESP.
  */
-class ConfigModule
+class ConfigModuleJson
 {
+public:
+    ConfigModuleJson(String _configFilePath);
+    ~ConfigModuleJson();
+    void setup();
+    bool saveConfig(const Config &config);
+    const Config loadConfig();
+
 private:
     const String configFilePath;
     Config parseJsonConfig(const JsonDocument &jsonObject);
     void copyToJsonConfig(const Config &config, JsonDocument &doc);
 
-public:
-    ConfigModule(String _configFilePath);
-    void setup();
-    bool saveConfig(const Config &config);
-    const Config loadConfig();
+protected:
 };
 
 #endif // ESP8266_CONFIGMODULE_H

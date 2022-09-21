@@ -23,6 +23,15 @@ void LedControlModule::setup(NeoPixelBusType *_pixelStrip)
 };
 
 /**
+ * Eteindre toutes les LEds.
+ */
+void LedControlModule::disableLeds()
+{
+    pixelStrip->ClearTo(RgbColor(0));
+    pixelStrip->Show();
+};
+
+/**
  * Afficher l'heure avec des LEDs.
  * @param simpleTime Heure à afficher.
  * @param ledColor Facultatif, définissez la couleur de la LED.
@@ -32,7 +41,6 @@ void LedControlModule::showTime(const SimpleTime &simpleTime, const RgbColor &le
     pixelStrip->ClearTo(RgbColor(0));
     enableLedWords(simpleTime, ledColor);
     // Serial.println("LedControlModule::showTime");
-
     // int minuteDots = simpleTime.getMinute() % 5;
     // enableMinuteDots(minuteDots, ledColor);
     pixelStrip->Show();
@@ -49,7 +57,6 @@ void LedControlModule::showConfigWifi(const RgbColor &ledColor)
     {
         enableLedWord(&WORD_WIFI[i], RgbColor(60, 220, 40));
     }
-
     pixelStrip->Show();
 }
 
@@ -61,11 +68,13 @@ void LedControlModule::showConfigWifi(const RgbColor &ledColor)
 void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbColor &ledColor)
 {
     // Serial.println("\nLedControlModule::enableLedWords");
-    enableLedWord(&PREFIX_IL, ledColor);
-    enableLedWord(&PREFIX_EST, ledColor);
+
     int hourIndex;
     int fiveMinutes = simpleTime.getMinute() / 5;
     Serial.printf("\nMinute: %i", fiveMinutes);
+    
+    enableLedWord(&PREFIX_IL, ledColor);
+    enableLedWord(&PREFIX_EST, ledColor);
 
     switch (fiveMinutes)
     {
@@ -192,12 +201,3 @@ void LedControlModule::enableMinuteDots(int subMinute, const RgbColor &ledColor)
         pixelStrip->SetPixelColor(j, ledColor);
     }
 }
-
-/**
- * Eteindre toutes les LEds.
- */
-void LedControlModule::disableLeds()
-{
-    pixelStrip->ClearTo(RgbColor(0));
-    pixelStrip->Show();
-};
