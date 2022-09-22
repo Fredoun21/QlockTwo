@@ -10,12 +10,13 @@
 #define WifiModule_H
 
 #include <stdio.h>
-#include <ESP8266WiFi.h>      //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
+#include <ESP8266WiFi.h> //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
+#include <WiFiClient.h>
 #include <DNSServer.h>        //Serveur DNS local utilisé pour rediriger toutes les requêtes vers le portail de configuration
+#include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h> //Serveur Web local utilisé pour servir le portail de configuration
 #include <WiFiManager.h>      //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 #include "ConfigModuleJson.h"
-// #include <ElegantOTA.h>
 
 /**
  * Gestion de la connexion au Wifi et configuration des identifiants Wifi en créant un point d'accès.
@@ -29,6 +30,7 @@ public:
     bool isConnected();
     bool connect();
     void reset();
+    void ElegantOTA(ESP8266WebServer *serveur());
     SimpleTime getEnableTime();
     SimpleTime getDisableTime();
     String getLedColor();

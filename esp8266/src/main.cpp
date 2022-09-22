@@ -4,6 +4,10 @@
 
 #include <Arduino.h>
 #include <Ticker.h>
+#include <ElegantOTA.h>
+#if defined(AVEC_REMOTE_DEVICE)
+#include <RemoteDebug.h> // Remote debug over WiFi - not recommended for production, only for development
+#endif
 #include "AmbientLightModule.h"
 #include "ClockModule.h"
 #include "ConfigModuleJson.h"
@@ -11,14 +15,13 @@
 #include "Settings.h"
 #include "SimpleTime.h"
 #include "WifiModule.h"
-#include "RemoteDebug.h" // Remote debug over WiFi - not recommended for production, only for development
 
 // using namespace ace_button;
 
 //-----------------------------------------------------
 // Member Variables
 //-----------------------------------------------------
-NeoTopology<MyPanelLayout> topo(PANEL_WIDTH, PANEL_HEIGHT); //declaration de la matrice de lEDs 
+NeoTopology<MyPanelLayout> topo(PANEL_WIDTH, PANEL_HEIGHT); // declaration de la matrice de lEDs
 
 LedControlModule ledControlModule(topo);
 
@@ -26,9 +29,9 @@ NeoPixelBusType pixelStrip(PIXEL_COUNT);
 
 ConfigModuleJson configModuleJson(CONFIG_FILE_PATH);
 
-WifiModule wifiModule(DEVICE_NAME);
+ESP8266WebServer server(80);
 
-WiFiServer server(80);
+WifiModule wifiModule(DEVICE_NAME);
 
 ClockModule clockModule(Wire, LOCAL_TIMEZONE, NTP_SERVER_NAME);
 
@@ -48,7 +51,7 @@ bool showTimeDisabled = false;
 uint32_t mTimeSeconds = 0;
 int currentLedColorId = 0;
 RgbColor currentLedColor = LED_COLORS[currentLedColorId];
-Config config;
+Config configJson;
 
 //-----------------------------------------------------
 // Function Declarations
@@ -82,10 +85,10 @@ void setup()
     Serial.println("Chargement configuration:");
 
     configModuleJson.setup();
-    config = configModuleJson.loadConfig();
+    configJson = configModuleJson.loadConfig();
 
     // Configuration LED strip
-    currentLedColorId = config.setLedColor;    
+    currentLedColorId = configJson.setLedColor;
     updateLedColor();
 
     ledControlModule.setup(&pixelStrip);
@@ -98,23 +101,26 @@ void setup()
     // wifiModule.reset();
     wifiModule.connect();
 
+    server.on("/", []()
+              { server.send(200, "text/plain", "Hi! I am QlockTwo."); });
+
+    ElegantOTA.begin(&server); // Start ElegantOTA
     server.begin();
+    Serial.println("HTTP server started");
 
     // Register host name in WiFi and mDNS
     String hostNameWifi = HOST_NAME;
     hostNameWifi.concat(".local");
-
-#ifdef ESP8266 // Only for it
     WiFi.hostname(hostNameWifi);
-#endif
-#ifdef USE_MDNS // Use the MDNS ?
+
+#if defined(AVEC_REMOTE_DEVICE)
+    // Use the MDNS
     if (MDNS.begin(HOST_NAME))
     {
         Serial.print("* MDNS responder started. Hostname -> ");
         Serial.println(HOST_NAME);
     }
     MDNS.addService("telnet", "tcp", 23);
-#endif
 
     // Initialize RemoteDebug
     Debug.begin(HOST_NAME);         // Initialize the WiFi server
@@ -135,6 +141,8 @@ void setup()
     Serial.println("*");
     Serial.println("* Please try change debug level in client (telnet or web app), to see how it works");
     Serial.println("*");
+
+#endif
 
     // Gestion de l'horloge
     clockModule.setup();
@@ -166,14 +174,8 @@ void loop()
         mTimeSeconds++;
     }
 
-    // Create a client and listen for incoming clients
-    WiFiClient client = server.available();
-
-    // Do nothing if server is not available
-    if (!client)
-    {
-        return;
-    }
+    // server OTA
+    server.handleClient();
 
     // RemoteDebug handle
     Debug.handle();
@@ -199,9 +201,9 @@ void configModeCallback(WiFiManager *myWiFiManager)
 void saveConfigCallback()
 {
     Serial.println("Save callback.");
-    config.enableTime = wifiModule.getEnableTime();
-    config.disableTime = wifiModule.getDisableTime();
-    configModuleJson.saveConfig(config);
+    configJson.enableTime = wifiModule.getEnableTime();
+    configJson.disableTime = wifiModule.getDisableTime();
+    configModuleJson.saveConfig(configJson);
 
     showTimeDisabled = false;
     showTime();
@@ -213,8 +215,8 @@ void saveConfigCallback()
  */
 void showTime()
 {
-    Serial.println("disableTime: " + config.disableTime.toString());
-    Serial.println("enableTime: " + config.enableTime.toString());
+    Serial.println("disableTime: " + configJson.disableTime.toString());
+    Serial.println("enableTime: " + configJson.enableTime.toString());
 
     if (!clockModule.isDateTimeValid())
     {
@@ -223,9 +225,9 @@ void showTime()
 
     const SimpleTime st = clockModule.getLocalSimpleTime();
 
-    if (config.disableTime == config.enableTime ||
-        !(((config.disableTime > config.enableTime) && (config.disableTime <= st && config.enableTime < st)) ||
-          ((config.disableTime < config.enableTime) && (config.disableTime <= st && config.enableTime > st))))
+    if (configJson.disableTime == configJson.enableTime ||
+        !(((configJson.disableTime > configJson.enableTime) && (configJson.disableTime <= st && configJson.enableTime < st)) ||
+          ((configJson.disableTime < configJson.enableTime) && (configJson.disableTime <= st && configJson.enableTime > st))))
     {
         Serial.println("Show Time: " + st.toString());
 
@@ -278,8 +280,8 @@ void updateLedColor()
 //         Serial.println("Button One Clicked");
 //         currentLedColorId = (currentLedColorId + 1) % LED_COLORS_SIZE;
 
-//         config.setLedColor = currentLedColorId;
-//         configModuleJson.saveConfig(config);
+//         configJson.setLedColor = currentLedColorId;
+//         configModuleJson.saveConfig(configJson);
 
 //         updateLedColor();
 //         showTime();
