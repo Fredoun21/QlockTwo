@@ -9,7 +9,9 @@
 
 #include "SimpleTime.h"
 #include <ArduinoJson.h>
+#if defined(AVEC_REMOTE_DEVICE)
 #include <RemoteDebug.h>
+#endif
 
 static const String ENABLE_TIME_ID = "enable_time";
 static const String DISABLE_TIME_ID = "disable_time";

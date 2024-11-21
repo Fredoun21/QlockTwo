@@ -88,12 +88,23 @@ void printDateTime(const time_t &dt)
 }
 
 /**
+ * Renvoie le numéro du mois
+ * @param dt
+ */
+int ClockModule::getMonth()
+{
+    time_t ntpTime = 0;
+    ntpTime = getNtpTime();
+    return month(ntpTime);
+}
+
+/**
  * Obtenez l'heure actuelle du serveur NTP et mettez à jour RTC.
  * @return vrai si la mise à jour a réussi
  */
 void ClockModule::update()
 {
-    Serial.println("\n ClockModule: Mise à jour de l'horloge.");
+    Serial.print("\nClockModule: Mise à jour de l'horloge.\n");
 
     int ntpAttempt = 0;
     time_t ntpTime = 0;
@@ -105,18 +116,22 @@ void ClockModule::update()
 
     if (ntpTime == 0)
     {
-        Serial.println("ClockModule: Echec de la mise à jour de l'horloge.");
+        Serial.print("\nClockModule: Echec de la mise à jour de l'horloge.\n");
         return;
     }
 
     // ntpTime = 1663334425;
 
-    printDateTime(ntpTime);
+    Serial.print("\tNTP Time: ");
     Serial.println(ntpTime);
+    Serial.printf("\t");
+    printDateTime(ntpTime);
+    Serial.print("\tmois: ");
+    Serial.println(month(ntpTime));
 
     RtcDateTime ntpRtcDateTime;
-    ntpRtcDateTime.InitWithEpoch32Time(ntpTime);
-    Serial.print("Convertion NTPtime: ");
+    ntpRtcDateTime.InitWithUnix32Time(ntpTime);
+    Serial.print("\tConvertion NTPtime: ");
     printDateTime(ntpRtcDateTime);
 
     rtc.SetDateTime(ntpRtcDateTime);
@@ -128,7 +143,7 @@ void ClockModule::update()
  */
 time_t ClockModule::getUtcTime()
 {
-    return rtc.GetDateTime().Epoch32Time();
+    return rtc.GetDateTime().Unix32Time();
 }
 
 /**
@@ -163,9 +178,10 @@ time_t ClockModule::getNtpTime()
     while (ntpUDP.parsePacket() > 0)
         ; // rejeter tous les paquets précédemment reçus
 
-    Serial.println("Transmit NTP Request");
+    Serial.println("\tTransmit NTP Request");
     // obtenir un serveur aléatoire du pool
     WiFi.hostByName(ntpServerName.c_str(), ntpServerIP);
+    Serial.print("\t\t");
     Serial.print(ntpServerName);
     Serial.print(": ");
     Serial.println(ntpServerIP);

@@ -15,6 +15,7 @@
 #include "Settings.h"
 #include "SimpleTime.h"
 #include "WifiModule.h"
+#include "GestureModule.h"
 
 // using namespace ace_button;
 
@@ -35,9 +36,13 @@ WifiModule wifiModule(DEVICE_NAME);
 
 ClockModule clockModule(Wire, LOCAL_TIMEZONE, NTP_SERVER_NAME);
 
+GestureModule gestureModule(PIN_INTERRUPT);
+
 AmbientLightModule ambientLight(LIGHT_SENSOR_PIN, MAXIMUM_LIGHT_VALUE);
 
+#if defined(AVEC_REMOTE_DEVICE)
 RemoteDebug Debug;
+#endif
 
 // AceButton buttonOne(new ButtonConfig());
 // AceButton buttonTwo(new ButtonConfig());
@@ -62,7 +67,7 @@ Config configJson;
 // void handleButtonFourEvent(AceButton *, uint8_t, uint8_t);
 
 void updateClock();
-void updateLedColor();
+void updateLedColor(int month);
 
 // void setButtonConfig(ButtonConfig *buttonConfig, ButtonConfig::EventHandler eventHandler);
 // void setupButtons();
@@ -89,10 +94,12 @@ void setup()
 
     // Configuration LED strip
     currentLedColorId = configJson.setLedColor;
-    updateLedColor();
+    updateLedColor(currentLedColorId);
 
     ledControlModule.setup(&pixelStrip);
     ledControlModule.showConfigWifi();
+
+    gestureModule.setup();
 
     // setupButtons();
 
@@ -160,6 +167,9 @@ void setup()
  */
 void loop()
 {
+
+    int month = clockModule.getMonth();
+
     if ((millis() - lastClockUpdate) > (CLOCK_UPDATE_INTERVAL * 1000))
     {
         updateClock();
@@ -168,17 +178,22 @@ void loop()
 
     if ((millis() - lastShowTime) > (TIME_UPDATE_INTERVAL * 1000) && !showTimeDisabled)
     {
-        // updateLedColor();
+        updateLedColor(month);
         showTime();
+        gestureModule.checkProximity();
+        gestureModule.checkColor();
         lastShowTime = millis();
         mTimeSeconds++;
     }
+    gestureModule.checkGesture();
 
     // server OTA
     server.handleClient();
 
+#if defined(AVEC_REMOTE_DEVICE)
     // RemoteDebug handle
     Debug.handle();
+#endif
 
     // Give a time for ESP
     yield();
@@ -229,13 +244,13 @@ void showTime()
         !(((configJson.disableTime > configJson.enableTime) && (configJson.disableTime <= st && configJson.enableTime < st)) ||
           ((configJson.disableTime < configJson.enableTime) && (configJson.disableTime <= st && configJson.enableTime > st))))
     {
-        Serial.println("Show Time: " + st.toString());
+        Serial.println("\tShow Time: " + st.toString());
 
         ledControlModule.showTime(st, currentLedColor);
     }
     else
     {
-        Serial.println("Show Time: LED DISABLED");
+        Serial.println("\tShow Time: LED DISABLED");
         ledControlModule.disableLeds();
     }
 }
@@ -245,7 +260,7 @@ void showTime()
  */
 void updateClock()
 {
-    Serial.println("Connection au wifi et mise à jour de l'horloge.");
+    Serial.println("\nConnection au wifi et mise à jour de l'horloge.");
     if (!wifiModule.isConnected())
     {
         wifiModule.connect();
@@ -257,12 +272,13 @@ void updateClock()
 /**
  * Appliquez la lumière ambiante en atténuant currentLedColor.
  */
-void updateLedColor()
+void updateLedColor(int month)
 {
-    currentLedColor = LED_COLORS[currentLedColorId];
-    int darken = 255 - ambientLight.getBrightness();
-    Serial.printf("\nBrightness: %i", darken);
-    currentLedColor.Darken(darken);
+    currentLedColor = LED_COLORS[month];
+    // currentLedColor = LED_COLORS[currentLedColorId];
+    // int darken = 255 - ambientLight.getBrightness();
+    // Serial.printf("\nBrightness: %i\n", darken);
+    // currentLedColor.Darken(darken);
 }
 
 /**

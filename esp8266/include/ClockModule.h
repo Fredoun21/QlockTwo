@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <Wire.h> // doit être inclus ici pour que les références de fichiers d'objets de la bibliothèque Arduino fonctionnent
 #include <RtcDS1307.h>
-#include <Timezone.h>
+#include <Timezone.h>   // https://github.com/JChristensen/Timezone Créer fichier library.json
 #include <TimeLib.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
@@ -29,6 +29,7 @@ public:
   void setup();
   bool isDateTimeValid();
   void update();
+  int getMonth();
   time_t getUtcTime();
   SimpleTime getLocalSimpleTime();
 

@@ -23,7 +23,7 @@ void LedControlModule::setup(NeoPixelBusType *_pixelStrip)
 };
 
 /**
- * Eteindre toutes les LEds.
+ * Eteindre toutes les LEDs.
  */
 void LedControlModule::disableLeds()
 {
@@ -53,9 +53,10 @@ void LedControlModule::showTime(const SimpleTime &simpleTime, const RgbColor &le
 void LedControlModule::showConfigWifi(const RgbColor &ledColor)
 {
     pixelStrip->ClearTo(RgbColor(0));
-    for (size_t i = 0; i < 8; i++)
+
+    for (size_t i = 0; i < 9; i++)
     {
-        enableLedWord(&WORD_WIFI[i], RgbColor(60, 220, 40));
+        enableLedWord(&WORD_WIFI[i], RgbColor(248, 248, 255));
     }
     pixelStrip->Show();
 }
@@ -71,8 +72,9 @@ void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbCol
 
     int hourIndex;
     int fiveMinutes = simpleTime.getMinute() / 5;
-    Serial.printf("\nMinute: %i", fiveMinutes);
-    
+    Serial.println("Mapping de Led:");
+    Serial.printf("\t- Numéro mapping Minute: %i\n", fiveMinutes);
+
     enableLedWord(&PREFIX_IL, ledColor);
     enableLedWord(&PREFIX_EST, ledColor);
 
@@ -103,10 +105,10 @@ void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbCol
         enableLedWord(&MINUTE_VINGTCINQ, ledColor);
         // Serial.println("VINGT-CINQ MINUTES");
         break;
-    case 6: // ET DEMI
+    case 6: // ET DEMIE
         enableLedWord(&INFIX_ET, ledColor);
-        enableLedWord(&MINUTE_DEMI, ledColor);
-        // Serial.println("ET DEMI");
+        enableLedWord(&MINUTE_DEMIE, ledColor);
+        // Serial.println("ET DEMIE");
         break;
     case 7: // 35 MINUTES
         enableLedWord(&INFIX_MOINS, ledColor);
@@ -136,21 +138,29 @@ void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbCol
         break;
     }
 
-    Serial.printf("\nsimpleTime.getHour: %i ", simpleTime.getHour());
+    // Serial.printf("\nsimpleTime.getHour: %i ", simpleTime.getHour());
 
-    if (fiveMinutes < 6)
+    if (fiveMinutes <= 6)
     {
         switch (simpleTime.getHour())
         {
         case 0:
             hourIndex = 0;
             break;
+        case 1:
+            hourIndex = 1;
+            enableLedWord(&SUFFIX_HEURE, ledColor);
+            break;
         case 12:
             hourIndex = 12;
             break;
+        case 13:
+            hourIndex = 1;
+            enableLedWord(&SUFFIX_HEURE, ledColor);
+            break;
         default:
             hourIndex = (simpleTime.getHour()) % 12;
-            enableLedWord(&SUFFIX_HEURE, ledColor);
+            enableLedWord(&SUFFIX_HEURES, ledColor);
             break;
         }
     }
@@ -166,12 +176,12 @@ void LedControlModule::enableLedWords(const SimpleTime &simpleTime, const RgbCol
             break;
         default:
             hourIndex = (simpleTime.getHour()) % 12 + 1;
-            enableLedWord(&SUFFIX_HEURE, ledColor);
+            enableLedWord(&SUFFIX_HEURES, ledColor);
             break;
         }
     }
     enableLedWord(&HOURS[hourIndex], ledColor);
-    Serial.printf("\nHeure: %i", hourIndex);
+    Serial.printf("\t- Numéro mapping Heure: %i\n", hourIndex);
 };
 
 /**

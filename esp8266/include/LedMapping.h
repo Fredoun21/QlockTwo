@@ -11,14 +11,15 @@ const LedWord INFIX_MOINS = LedWord(0, 6, 5); // MOINS
 const LedWord INFIX_LE = LedWord(6, 6, 2);    // LE
 const LedWord INFIX_ET = LedWord(0, 7, 2);    // ET
 
-const LedWord SUFFIX_HEURE = LedWord(5, 5, 5); // HEURE
+const LedWord SUFFIX_HEURE = LedWord(5, 5, 5);  // HEURE
+const LedWord SUFFIX_HEURES = LedWord(5, 5, 6); // HEURES
 
 const LedWord MINUTE_CINQ = LedWord(6, 8, 4);       // CINQ
 const LedWord MINUTE_DIX = LedWord(8, 6, 3);        // DIX
 const LedWord MINUTE_QUART = LedWord(3, 7, 5);      // QUART
 const LedWord MINUTE_VINGT = LedWord(0, 8, 5);      // VINGT
 const LedWord MINUTE_VINGTCINQ = LedWord(0, 8, 10); // VINGT-CINQ
-const LedWord MINUTE_DEMI = LedWord(3, 9, 4);       // DEMI
+const LedWord MINUTE_DEMIE = LedWord(3, 9, 5);      // DEMIE
 
 const LedWord HOURS[] = {
     LedWord(5, 4, 6), // MINUIT
@@ -45,7 +46,7 @@ const LedWord WORD_WIFI[] = {
     LedWord(8, 7, 3),  // PMD
     LedWord(10, 8, 1), // U
     LedWord(2, 9, 1),  // S
-    LedWord(7, 9, 4)   // EPAM
+    LedWord(8, 9, 3)   // PAM
 };
 
 #endif /* LedMapping_H */

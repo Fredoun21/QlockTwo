@@ -16,6 +16,9 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h> //Serveur Web local utilisé pour servir le portail de configuration
 #include <WiFiManager.h>      //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#warning				 // #define WEBSERVER_H Indispensable pour valider la compilation entre WiFiManager.h et ESPAsyncWebServer.h
+#undef WEBSERVER_H
+#define WEBSERVER_H
 #include "ConfigModuleJson.h"
 
 /**
