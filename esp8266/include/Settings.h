@@ -39,7 +39,7 @@ const RgbColor LED_COLORS[] = {
     RgbColor(1, 215, 88),    // VertEmeraude - #01D758 - Septembre
     RgbColor(244, 164, 96),  // Sandybrown - #F4A460 - Octobre
     RgbColor(169, 169, 169), // Darkgrey  - #A9A9A9 - Novembre
-    RgbColor(178, 34, 34),   // Firebrick - #B22222 - Décembre
+    RgbColor(27, 50, 177),   // Firebrick - #1b32b1 - Décembre
 
 };
 
@@ -50,5 +50,8 @@ const RgbColor LED_COLORS[] = {
 #else
 #define HOST_NAME "Qlocktwo"
 #endif
+
+#undef AVEC_APDS9960
+// #define AVEC_APDS9960
 
 #endif // Settings_H

@@ -43,7 +43,7 @@ void ClockModule::setup()
  */
 bool ClockModule::isDateTimeValid()
 {
-    Serial.printf("Date valide: %i\n", rtc.IsDateTimeValid());
+    Serial.println("RTC est en fonctionnement et la date est valide.");
     return rtc.IsDateTimeValid();
 }
 
@@ -129,6 +129,8 @@ void ClockModule::update()
     Serial.print("\tmois: ");
     Serial.println(month(ntpTime));
 
+    rtc.SetIsRunning(true);
+     
     RtcDateTime ntpRtcDateTime;
     ntpRtcDateTime.InitWithUnix32Time(ntpTime);
     Serial.print("\tConvertion NTPtime: ");
@@ -178,21 +180,21 @@ time_t ClockModule::getNtpTime()
     while (ntpUDP.parsePacket() > 0)
         ; // rejeter tous les paquets précédemment reçus
 
-    Serial.println("\tTransmit NTP Request");
+    Serial.println("Transmit NTP Request");
     // obtenir un serveur aléatoire du pool
     WiFi.hostByName(ntpServerName.c_str(), ntpServerIP);
-    Serial.print("\t\t");
+    Serial.print("\t");
     Serial.print(ntpServerName);
     Serial.print(": ");
     Serial.println(ntpServerIP);
     this->sendNTPpacket(ntpServerIP);
     uint32_t beginWait = millis();
-    while (millis() - beginWait < 1500)
+    while ((millis() - beginWait) < 1500)
     {
         int size = ntpUDP.parsePacket();
         if (size >= NTP_PACKET_SIZE)
         {
-            Serial.println("Receive NTP Response");
+            Serial.print("Receive NTP Response: ");
             ntpUDP.read(packetBuffer, NTP_PACKET_SIZE); // lire le paquet dans la mémoire tampon
             unsigned long secsSince1900;
             // convertir quatre octets commençant à l'emplacement 40 en un entier long
@@ -200,6 +202,7 @@ time_t ClockModule::getNtpTime()
             secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
             secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
             secsSince1900 |= (unsigned long)packetBuffer[43];
+            Serial.println(secsSince1900 - 2208988800UL);
             return secsSince1900 - 2208988800UL;
         }
     }

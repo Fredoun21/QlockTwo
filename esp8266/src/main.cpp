@@ -15,28 +15,32 @@
 #include "Settings.h"
 #include "SimpleTime.h"
 #include "WifiModule.h"
+#ifdef AVEC_APDS9960
 #include "GestureModule.h"
+#endif
 
 // using namespace ace_button;
 
 //-----------------------------------------------------
 // Member Variables
 //-----------------------------------------------------
-NeoTopology<MyPanelLayout> topo(PANEL_WIDTH, PANEL_HEIGHT); // declaration de la matrice de lEDs
+NeoTopology<MyPanelLayout> topo(PANEL_WIDTH, PANEL_HEIGHT); // declaration de la matrice de LEDs
 
-LedControlModule ledControlModule(topo);
+LedControlModule ledControlModule(topo); // déclaration
 
-NeoPixelBusType pixelStrip(PIXEL_COUNT);
+NeoPixelBusType pixelStrip(PIXEL_COUNT); // déclaration
 
-ConfigModuleJson configModuleJson(CONFIG_FILE_PATH);
+ConfigModuleJson configModuleJson(CONFIG_FILE_PATH); // declaration gestion fichier JSON
 
 ESP8266WebServer server(80);
 
 WifiModule wifiModule(DEVICE_NAME);
 
-ClockModule clockModule(Wire, LOCAL_TIMEZONE, NTP_SERVER_NAME);
+ClockModule clockModule(Wire, LOCAL_TIMEZONE, NTP_SERVER_NAME); // déclaration module RTC
 
+#ifdef AVEC_APDS9960
 GestureModule gestureModule(PIN_INTERRUPT);
+#endif
 
 AmbientLightModule ambientLight(LIGHT_SENSOR_PIN, MAXIMUM_LIGHT_VALUE);
 
@@ -65,12 +69,11 @@ Config configJson;
 // void handleButtonTwoEvent(AceButton *, uint8_t, uint8_t);
 // void handleButtonThreeEvent(AceButton *, uint8_t, uint8_t);
 // void handleButtonFourEvent(AceButton *, uint8_t, uint8_t);
+// void setButtonConfig(ButtonConfig *buttonConfig, ButtonConfig::EventHandler eventHandler);
+// void setupButtons();
 
 void updateClock();
 void updateLedColor(int month);
-
-// void setButtonConfig(ButtonConfig *buttonConfig, ButtonConfig::EventHandler eventHandler);
-// void setupButtons();
 void showTime();
 void configModeCallback(WiFiManager *myWiFiManager);
 void saveConfigCallback();
@@ -89,21 +92,24 @@ void setup()
     Serial.println("\nDebut de l'installation.");
     Serial.println("Chargement configuration:");
 
+    // --------------------------------------------- Lecture fichier de configuration
     configModuleJson.setup();
     configJson = configModuleJson.loadConfig();
 
-    // Configuration LED strip
+    // --------------------------------------------- Configuration LED strip
     currentLedColorId = configJson.setLedColor;
     updateLedColor(currentLedColorId);
-
     ledControlModule.setup(&pixelStrip);
     ledControlModule.showConfigWifi();
 
+// --------------------------------------------- Démarrage capteur de gestes
+#ifdef AVEC_APDS9960
     gestureModule.setup();
+#endif
 
     // setupButtons();
 
-    // Configuration Wifi
+    // --------------------------------------------- Configuration Wifi
     wifiModule.setup(configModeCallback, saveConfigCallback);
     // wifiModule.reset();
     wifiModule.connect();
@@ -111,6 +117,7 @@ void setup()
     server.on("/", []()
               { server.send(200, "text/plain", "Hi! I am QlockTwo."); });
 
+    // --------------------------------------------- Démarrage serveur Elegant OTA
     ElegantOTA.begin(&server); // Start ElegantOTA
     server.begin();
     Serial.println("HTTP server started");
@@ -151,10 +158,10 @@ void setup()
 
 #endif
 
-    // Gestion de l'horloge
-    clockModule.setup();
+    // --------------------------------------------- Gestion de l'horloge
+    clockModule.setup(); // Démarrage RTC
     updateClock();
-    lastClockUpdate = millis();
+    lastClockUpdate = millis(); // Mémoire compteur temps MAJ horloge
 
     showTime();
     lastShowTime = millis();
@@ -167,25 +174,32 @@ void setup()
  */
 void loop()
 {
-
-    int month = clockModule.getMonth();
-
+    int month = 0;
+    //  MAJ horloge toutes les 24h
     if ((millis() - lastClockUpdate) > (CLOCK_UPDATE_INTERVAL * 1000))
     {
         updateClock();
-        lastClockUpdate = millis();
+        lastClockUpdate = millis(); // Nouveau cycle de 24h
     }
 
+    // MAJ affichage toutes les 10s
     if ((millis() - lastShowTime) > (TIME_UPDATE_INTERVAL * 1000) && !showTimeDisabled)
     {
+        month = clockModule.getMonth();
+        // updateLedColor(10);
         updateLedColor(month);
         showTime();
+        lastShowTime = millis(); // Nouveau cycle de 10s
+        mTimeSeconds++;
+#ifdef AVEC_APDS9960
         gestureModule.checkProximity();
         gestureModule.checkColor();
-        lastShowTime = millis();
-        mTimeSeconds++;
+#endif
     }
+
+#ifdef AVEC_APDS9960
     gestureModule.checkGesture();
+#endif
 
     // server OTA
     server.handleClient();
@@ -276,9 +290,9 @@ void updateLedColor(int month)
 {
     currentLedColor = LED_COLORS[month];
     // currentLedColor = LED_COLORS[currentLedColorId];
-    // int darken = 255 - ambientLight.getBrightness();
-    // Serial.printf("\nBrightness: %i\n", darken);
-    // currentLedColor.Darken(darken);
+    //     int darken = 255 - ambientLight.getBrightness();
+    //     Serial.printf("\nBrightness: %i\n", darken);
+    //     currentLedColor.Darken(darken);
 }
 
 /**

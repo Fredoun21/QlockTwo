@@ -15,7 +15,6 @@
 #include "LedWord.h"
 #include "LedMapping.h"
 #include "SimpleTime.h"
-// #include "RemoteDebug.h"
 
 typedef NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> NeoPixelBusType;
 typedef RowMajorAlternating180Layout MyPanelLayout;
